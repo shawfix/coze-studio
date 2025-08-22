@@ -138,16 +138,16 @@ func (t *s3Client) CheckAndCreateBucket(ctx context.Context) error {
 		return nil // already exist
 	}
 
-	// bucket not exist
-	if awsErr, ok := err.(interface{ ErrorCode() string }); ok && awsErr.ErrorCode() == "404" {
-		input := &s3.CreateBucketInput{
-			Bucket: aws.String(bucket),
-		}
-		// create bucket
-		_, err := client.CreateBucket(ctx, input)
+	awsErr, ok := err.(interface{ ErrorCode() string })
+	if !ok || awsErr.ErrorCode() != "404" {
 		return err
 	}
-	// other case
+
+	// bucket not exist
+	input := &s3.CreateBucketInput{
+		Bucket: aws.String(bucket),
+	}
+	_, err = client.CreateBucket(ctx, input)
 	return err
 }
 
